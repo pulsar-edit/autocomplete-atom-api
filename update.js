@@ -26,7 +26,7 @@ request(requestOptions, function(error, response, release) {
     return process.exit(1);
   }
 
-  const [apiAsset] = Array.from(release.assets.filter(({name}) => name === 'atom-api.json'));
+  const apiAsset = release.assets.filter(({name}) => name === 'atom-api.json');
 
   if (!(apiAsset != null ? apiAsset.browser_download_url : undefined)) {
     console.error('No atom-api.json asset found in latest release');
@@ -38,13 +38,13 @@ request(requestOptions, function(error, response, release) {
     url: apiAsset.browser_download_url
   };
 
-  return request(apiRequestOptions, function(error, response, atomApi) {
+  request(apiRequestOptions, function(error, response, atomApi) {
     if (error != null) {
       console.error(error.message);
       return process.exit(1);
     }
 
-    const {classes} = atomApi;
+    const classes = atomApi;
 
     const publicClasses = {};
     for (let name in classes) {
@@ -59,17 +59,17 @@ request(requestOptions, function(error, response, release) {
       }
     }
 
-    return fs.writeFileSync('completions.json', JSON.stringify(publicClasses, null, '  '));
+    fs.writeFileSync('completions.json', JSON.stringify(publicClasses, null, '  '));
   });
 });
 
-var isVisible = ({visibility}) => ['Essential', 'Extended', 'Public'].includes(visibility);
+const isVisible = ({visibility}) => ['Essential', 'Extended', 'Public'].includes(visibility);
 
-var convertMethodToSuggestion = function(className, method) {
+const convertMethodToSuggestion = function(className, method) {
   const {name, summary, returnValues} = method;
   const args = method['arguments'];
 
-  const snippets = [];
+  let snippets = [];
   if (args != null ? args.length : undefined) {
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
@@ -85,28 +85,24 @@ var convertMethodToSuggestion = function(className, method) {
     text = `${name}()`;
   }
 
-  const returnValue = __guard__(returnValues != null ? returnValues[0] : undefined, x => x.type);
+  const returnValue = returnValues?[0]?.type;
   const description = summary;
   const descriptionMoreURL = getDocLink(className, name);
   return {name, text, snippet, description, descriptionMoreURL, leftLabel: returnValue, type: 'method'};
 };
 
-var convertPropertyToSuggestion = function(className, {name, summary}) {
+const convertPropertyToSuggestion = function(className, {name, summary}) {
   const text = name;
-  const returnValue = __guard__(summary != null ? summary.match(/\{(\w+)\}/) : undefined, x => x[1]);
+  const returnValue = summary?.match(/\{(\w+)\}/)?[1];
   const description = summary;
   const descriptionMoreURL = getDocLink(className, name);
   return {name, text, description, descriptionMoreURL, leftLabel: returnValue, type: 'property'};
 };
 
-var getDocLink = (className, instanceName) => `https://atom.io/docs/api/latest/${className}#instance-${instanceName}`;
+const getDocLink = (className, instanceName) => `https://atom.io/docs/api/latest/${className}#instance-${instanceName}`;
 
-var textComparator = function(a, b) {
+const textComparator = function(a, b) {
   if (a.name > b.name) { return 1; }
   if (a.name < b.name) { return -1; }
   return 0;
 };
-
-function __guard__(value, transform) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
-}
