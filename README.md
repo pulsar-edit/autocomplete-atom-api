@@ -1,3 +1,5 @@
+# This repo is now archived under Pulsar due to being [bundled](https://github.com/pulsar-edit/pulsar/pull/476) within the editor.
+
 # Atom API Autocomplete package
 
 Provides autocompletions for properties and methods available from the `atom.` global.
